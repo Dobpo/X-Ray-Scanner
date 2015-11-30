@@ -16,6 +16,7 @@ namespace X_Ray_Scanner
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
+        #region Свойства для Зума.
         /// <summary>
         /// Specifies the current state of the mouse handling logic.
         /// </summary>
@@ -50,6 +51,7 @@ namespace X_Ray_Scanner
         /// Set to 'true' when the previous zoom rect is saved.
         /// </summary>
         private bool prevZoomRectSet = false;
+        #endregion
 
         public MainWindow()
         {
@@ -74,16 +76,21 @@ namespace X_Ray_Scanner
         private void ShowImage()
         {
             BitmapSource btm = new BitmapImage(new Uri("G:\\Images\\rab_stol.jpg"));
-            zoomAndPanControl.Background = Brushes.LightBlue;
+            zoomAndPanControl.Background = Brushes.LightGray;
             ThumbImage.Source = btm;
             content.Source = btm;
             Label2.Content = btm.DpiX;
             Label3.Content = btm.DpiY;
         }
 
+
+        /// <summary>
+        /// Событие, показать изображение.
+        /// </summary>
         private void ShowButton_Click(object sender, RoutedEventArgs e)
         {
             ShowImage();
+            ZoomControlsEnable();
         }
 
         /// <summary>
@@ -94,6 +101,33 @@ namespace X_Ray_Scanner
             DisconnectEthernet();
         }
 
+        /// <summary>
+        /// Делает кнопки и слайдер зума доступными для использования.
+        /// </summary>
+        private void ZoomControlsEnable()
+        {
+            ZoomSlider.IsEnabled = true;
+            ZoomPlusButton.IsEnabled = true;
+            ZoomRefreshButton.IsEnabled = true;
+            ZoomExpandButton.IsEnabled = true;
+            ZoomMinusButton.IsEnabled = true;
+        }
+        
+        /// <summary>
+        /// Запрещает использование кнопок и слайдера зума.
+        /// </summary>
+        private void ZoomControlsDisable()
+        {
+            ZoomSlider.IsEnabled = false;
+            ZoomPlusButton.IsEnabled = false;
+            ZoomRefreshButton.IsEnabled = false;
+            ZoomExpandButton.IsEnabled = false;
+            ZoomMinusButton.IsEnabled = false;
+        }
+
+        /// <summary>
+        /// Событие переключатель показать/закрыть место для графиков.
+        /// </summary>
         private void IsCheckedChange_SwitchGamma(object sender, EventArgs e)
         {
             if (EnabledSwitchGamma.IsChecked == true)
@@ -117,6 +151,8 @@ namespace X_Ray_Scanner
             ThumbImage.Source = null;
             content.Source = null;
             zoomAndPanControl.Background = null;
+            ZoomControlsDisable();
+            zoomAndPanControl.AnimatedZoomTo(1.0); //Установить начальный зум.
         }
         
         #region Собития для подсказки
