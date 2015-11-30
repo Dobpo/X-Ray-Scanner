@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using ZoomAndPan;
+using TrustSoft.Xaml.ShaderEffects;
 using Brush = System.Windows.Media.Brush;
 
 namespace X_Ray_Scanner
