@@ -1,0 +1,493 @@
+﻿<Controls:MetroWindow x:Class="X_Ray_Scanner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:ZoomAndPan="clr-namespace:ZoomAndPan;assembly=ZoomAndPan"
+        xmlns:xRayScanner="clr-namespace:X_Ray_Scanner"
+        mc:Ignorable="d"
+        Title="X-Ray Scanner" 
+        Height="800" 
+        Width="1024" 
+        WindowStartupLocation="CenterScreen" 
+        Closed="MainWindow_Closed"
+        Icon="Images\eye.png" 
+        WindowTitleBrush="{StaticResource WindowTitleColorBrush}"
+        FocusManager.FocusedElement="{Binding ElementName=scroller}"
+        >
+    <Window.Resources>
+
+        <!-- UI commands. -->
+        <RoutedUICommand x:Key="Commands.ZoomOut" />
+        <RoutedUICommand x:Key="Commands.ZoomIn" />
+        <RoutedUICommand x:Key="Commands.JumpBackToPrevZoom" />
+        <RoutedUICommand x:Key="Commands.Fill" />
+        <RoutedUICommand x:Key="Commands.OneHundredPercent" />
+
+        <!-- 
+        This converts from a scale value to a percentage value.
+        It is used to convert the value of 'ContentScale' to the percentage zoom level that is displayed in the UI.
+        -->
+        <xRayScanner:ScaleToPercentConverter 
+            x:Key="scaleToPercentConverter" 
+            />
+        
+        <!-- 
+        Converts a color value to a brush.
+        -->
+        <xRayScanner:ColorToBrushConverter 
+            x:Key="colorToBrushConverter"
+            />
+        
+
+    </Window.Resources>
+
+    <Window.InputBindings>
+
+        <!--
+        Bind keys to commands.
+        -->
+        <KeyBinding
+			Key="Minus"
+			Command="{StaticResource Commands.ZoomOut}"
+			/>
+        <KeyBinding
+			Key="Plus"
+			Command="{StaticResource Commands.ZoomIn}"
+			/>
+        <KeyBinding
+			Key="Back"
+			Command="{StaticResource Commands.JumpBackToPrevZoom}"
+			/>
+
+    </Window.InputBindings>
+
+    <Window.CommandBindings>
+
+        <!--
+        Bind commands to event handlers.
+        -->
+        <CommandBinding 
+            Command="{StaticResource Commands.ZoomOut}" 
+            Executed="ZoomOut_Executed" 
+            />
+        <CommandBinding 
+            Command="{StaticResource Commands.ZoomIn}" 
+            Executed="ZoomIn_Executed" 
+            />
+        <CommandBinding 
+            Command="{StaticResource Commands.JumpBackToPrevZoom}" 
+            Executed="JumpBackToPrevZoom_Executed" 
+            CanExecute="JumpBackToPrevZoom_CanExecuted"
+            />
+        <CommandBinding 
+            Command="{StaticResource Commands.Fill}" 
+            Executed="Fill_Executed" 
+            />
+        <CommandBinding 
+            Command="{StaticResource Commands.OneHundredPercent}" 
+            Executed="OneHundredPercent_Executed" 
+            />
+
+    </Window.CommandBindings>
+    <Grid x:Name="MainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="850*"/>
+            <ColumnDefinition x:Name="GraphicsColumnDefinition" Width="0"/>
+            <ColumnDefinition Width="350"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="300"/>
+            <RowDefinition Height="420*"/>
+            <RowDefinition x:Name="GraphicsRowDefinition"  Height="0"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <StatusBar 
+                   Grid.Row="3" 
+                   Grid.ColumnSpan="3"
+                   >
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="30" />
+                            <ColumnDefinition Width="18" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="0"
+                           x:Name="StatusInfo" 
+                           Content="Готов" 
+                           Height="30"
+                           />
+            <StatusBarItem Grid.Column="2" 
+                           HorizontalAlignment="Right"
+                           x:Name="ConnectionInfoLabel"
+                           Height="30"
+                           Content="Соединение не установлено"
+                           />
+            <StatusBarItem Grid.Column="3">
+                <ContentControl>
+                    <Canvas Width="24" Height="24">
+                        <Path x:Name="ImageConnection"></Path>
+                    </Canvas>
+                </ContentControl>
+            </StatusBarItem>
+            
+            <StatusBarItem Grid.Column="4" Padding="0,10,0,0">
+                <ContentControl>
+                    <ResizeGrip VerticalAlignment="Bottom"></ResizeGrip>
+                </ContentControl>
+            </StatusBarItem>
+        </StatusBar>
+        <Canvas Grid.Row="0" Grid.Column="2"
+                >
+            <Border Canvas.Left="10" 
+                    Canvas.Top="10"
+                    BorderBrush="Gray"
+                    BorderThickness="1,1,1,1">
+                <Border.Background>
+                    <ImageBrush ImageSource="Images\startimage.jpg" Opacity="0.6"></ImageBrush>
+                </Border.Background>
+                <Image x:Name="ThumbImage" 
+                   Height="200" 
+                   Width="200"
+                   Stretch="Fill" 
+                 >
+                </Image>
+            </Border>
+            <Button x:Name="ShowButton" 
+                    Content="Показать" 
+                    Canvas.Left="248" 
+                    Canvas.Top="10" 
+                    Width="68" Click="ShowButton_Click"/>
+            <Button x:Name="CloseImageButton" 
+                    Content="Закрыть" 
+                    Canvas.Left="248" 
+                    Canvas.Top="40" 
+                    Width="68" Click="CloseImageButton_Click"/>
+
+            <!--
+            Button to zoom in.
+            -->
+            <Button x:Name="ZoomPlusButton" 
+                    Canvas.Left="10" 
+                    Canvas.Top="250" 
+                    Width="40" 
+                    Height="40" 
+                    RenderTransformOrigin="0.5,0.5"
+                    Command="{StaticResource Commands.ZoomIn}"
+                    >
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.509"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+                <Viewbox Width="30" Height="30">
+                    <Canvas Width="24" Height="24">
+                        <Path Data="M9,2A7,7 0 0,1 16,9C16,10.57 15.5,12 14.61,13.19L15.41,14H16L22,20L20,22L14,16V15.41L13.19,14.61C12,15.5 10.57,16 9,16A7,7 0 0,1 2,9A7,7 0 0,1 9,2M8,5V8H5V10H8V13H10V10H13V8H10V5H8Z" Fill="{StaticResource AccentColorBrush}" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
+
+            <!-- 
+            The 100% button.  Causes the content to be scaled to 100 percent.
+            -->
+            <Button x:Name="ZoomRefreshButton" 
+            	Canvas.Left="65" 
+            	Canvas.Top="250" 
+            	Width="40" 
+            	Height="40" 
+            	RenderTransformOrigin="0.5,0.5"
+                Command="{StaticResource Commands.OneHundredPercent}">
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.509"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+                <Viewbox Width="30" Height="30">
+                    <Canvas Width="24" Height="24">
+                        <Path Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" Fill="{StaticResource AccentColorBrush}" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
+
+            <!-- 
+            The fill button.  Causes the content to be scaled so that it fits in the viewport.
+            -->
+            <Button x:Name="ZoomExpandButton" 
+            	Canvas.Left="120" 
+            	Canvas.Top="250" 
+            	Width="40" 
+            	Height="40" 
+            	RenderTransformOrigin="0.5,0.5"
+                Command="{StaticResource Commands.Fill}">
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.509"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+                <Viewbox Width="30" Height="30">
+                    <Canvas Width="24" Height="24">
+                        <Path Data="M9.5,13.09L10.91,14.5L6.41,19H10V21H3V14H5V17.59L9.5,13.09M10.91,9.5L9.5,10.91L5,6.41V10H3V3H10V5H6.41L10.91,9.5M14.5,13.09L19,17.59V14H21V21H14V19H17.59L13.09,14.5L14.5,13.09M13.09,9.5L17.59,5H14V3H21V10H19V6.41L14.5,10.91L13.09,9.5Z" Fill="{StaticResource AccentColorBrush}" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
+
+            <!-- Button to zoom out. -->
+            <Button x:Name="ZoomMinusButton" 
+            	Canvas.Left="170" 
+            	Canvas.Top="250" 
+            	Width="40" 
+            	Height="40" 
+            	RenderTransformOrigin="0.5,0.5"
+                Command="{StaticResource Commands.ZoomOut}">
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.509"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+                <Viewbox Width="30" Height="30">
+                    <Canvas Width="24" Height="24">
+                        <Path Data="M9,2A7,7 0 0,1 16,9C16,10.57 15.5,12 14.61,13.19L15.41,14H16L22,20L20,22L14,16V15.41L13.19,14.61C12,15.5 10.57,16 9,16A7,7 0 0,1 2,9A7,7 0 0,1 9,2M5,8V10H13V8H5Z" Fill="{StaticResource AccentColorBrush}" />
+                    </Canvas>
+                </Viewbox>
+            </Button>
+
+            <!-- Slider to change the current zoom level. -->
+            <Slider Canvas.Left="10" 
+                    Canvas.Top="222" 
+                    Width="200"
+                    Minimum="10" 
+                    LargeChange="20" 
+                    TickFrequency="10" 
+                    Maximum="200" 
+                    SmallChange="10" 
+                    TickPlacement="TopLeft"
+                    Value="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"
+                />
+
+            <!--
+            This is the label that shows what the current zoom level
+            is while zooming in and out.
+            -->
+            <TextBlock Canvas.Left="228" 
+                       Text="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}" 
+                       Canvas.Top="264"/>
+            <TextBlock Canvas.Left="247" 
+                       Text="%" 
+                       Canvas.Top="264"/>
+
+        </Canvas>
+        <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="2">
+            <Grid.Resources>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.AnimatedSingleRowTabControl.xaml" />
+            </Grid.Resources>
+            <TabControl x:Name="TabControl" 
+                    Controls:TabControlHelper.IsUnderlined="True"
+                    >
+                <TabItem Header="Ethernet свойства" 
+                     Controls:ControlsHelper.HeaderFontSize="14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="150"/>
+                            <RowDefinition Height="261*"/>
+                        </Grid.RowDefinitions>
+                        <Label x:Name="Label5" 
+                           Content="IP адресс :" 
+                           HorizontalAlignment="Left" 
+                           Margin="10,10,0,0" 
+                           VerticalAlignment="Top"/>
+                        <TextBox Grid.Row="0"
+                             x:Name="IpAddressTextBox" 
+                             HorizontalAlignment="Left" 
+                             Height="20" 
+                             Margin="10,42,0,0" 
+                             Text="192.168.0.48" 
+                             VerticalAlignment="Top" Width="99" MaxLines="1" MaxLength="15" MouseMove="IpAddressTextBox_MouseMove" MouseLeave="MouseLeaveInfo"/>
+                        <Label Grid.Row="0"
+                           x:Name="Label6" 
+                           Content="Порт :" 
+                           HorizontalAlignment="Left" 
+                           Margin="117,10,0,0" 
+                           VerticalAlignment="Top" 
+                           RenderTransformOrigin="0.316,-0.077"/>
+                        <TextBox Grid.Row="0"
+                             x:Name="PortTextBox" 
+                             HorizontalAlignment="Left" 
+                             Height="20" 
+                             Margin="123,42,0,0" 
+                             Text="9670" 
+                             VerticalAlignment="Top" 
+                             Width="58" MaxLines="1" MaxLength="4" MouseMove="PortTextBox_MouseMove"/>
+                        <Button Grid.Row="0"
+                            x:Name="ConnectButton" 
+                            Content="Установить соединение" 
+                            HorizontalAlignment="Left" 
+                            Margin="198,41,0,0" 
+                            VerticalAlignment="Top" 
+                            Height="20"
+                            Width="136" 
+                            Click="ConnectButton_Click"/>
+                        <TextBox Grid.Row="0"
+                             x:Name="SendDataTextBox" 
+                    	     HorizontalAlignment="Left" 
+                    	     Height="20" 
+                    	     Margin="10,94,0,0" 
+                    	     TextWrapping="Wrap" 
+                    	     Text="" 
+                    	     VerticalAlignment="Top" 
+                    	     Width="171" MouseMove="SendDataTextBox_MouseMove" MouseLeave="MouseLeaveInfo"/>
+                        <Label Grid.Row="0" 
+                           x:Name="Label7" 
+                    	   Content="Данные для отправки :" 
+                    	   HorizontalAlignment="Left" 
+                    	   Margin="10,68,0,0" 
+                    	   VerticalAlignment="Top"/>
+                        <Button Grid.Row="0" 
+                            x:Name="SendButton" 
+                    	    Content="Отправить данные" 
+                    	    HorizontalAlignment="Left" 
+                    	    Margin="198,94,0,0" 
+                    	    VerticalAlignment="Top" 
+                    	    Height="20"
+                    	    Width="136" Click="SendButton_Click"/>
+                        <Label Grid.Row="0" 
+                           x:Name="Label8" 
+                    	   Content="Обмена данными :" 
+                    	   HorizontalAlignment="Left" 
+                    	   Margin="10,119,0,0" 
+                    	   VerticalAlignment="Top"/>
+                        <TextBox x:Name="StatusTextBox" 
+                             Grid.Row="1" 
+                             TextWrapping="Wrap" 
+                             Text="Начало работы.&#x0a;"
+                             VerticalScrollBarVisibility="Visible" 
+                             AcceptsReturn="True" 
+                             IsReadOnly="True" 
+                             TextChanged="StatusTextBox_TextChanged"/>
+                        <Button Grid.Row="0" x:Name="CleanButton" 
+                            Content="Очистить поле"
+                            HorizontalAlignment="Left"
+                            Margin="198,120,0,0" 
+                            VerticalAlignment="Top"
+                            Width="136" Click="CleanButton_Click"/>
+                        <Button Grid.Row="0"
+                     	x:Name="DisconnectButton" 
+                     	Content="Разорвать соединение" 
+                     	HorizontalAlignment="Left" 
+                     	Margin="198,68,0,0" 
+                     	VerticalAlignment="Top" 
+                     	Height="20"
+                     	Width="136" Click="DisconnectButton_Click"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Обработка изображения" 
+                     Controls:ControlsHelper.HeaderFontSize="14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="100"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Controls:ToggleSwitch Grid.Column="0" Grid.Row="0"
+                                   x:Name="EnabledSwitchGamma"
+                                   IsChecked="False"
+                                   OnLabel="Enabled"
+                                   OffLabel="Disabled" IsCheckedChanged="IsCheckedChange_SwitchGamma"  
+                                   />
+                        <Label Grid.Column="0" Grid.Row="1" 
+                            x:Name="Label1" 
+                           Content="Label" 
+                           HorizontalAlignment="Left" 
+                           Margin="10,10,0,0" 
+                           VerticalAlignment="Top"/>
+                        <Label x:Name="Label2"  Grid.Column="0" Grid.Row="1"
+                           Content="Label" 
+                           HorizontalAlignment="Left" 
+                           Margin="10,40,0,0"
+                           VerticalAlignment="Top"/>
+                        <Label  Grid.Column="0" Grid.Row="1"
+                            x:Name="Label3" 
+                           Content="Label" 
+                           HorizontalAlignment="Left"
+                           Margin="10,70,0,0" 
+                           VerticalAlignment="Top"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Дополнительные настройки"
+                     Controls:ControlsHelper.HeaderFontSize="14"
+                     >
+
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <!--
+	    Wrap the ZoomAndPanControl in a ScrollViewer.
+	    When the scaled content that is displayed in ZoomAndPanControl is larger than the viewport onto the content
+	    ScrollViewer's scrollbars can be used to manipulate the offset of the viewport.    
+        -->
+        <ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                      x:Name="scroller"
+                      HorizontalScrollBarVisibility="Auto" 
+                      VerticalScrollBarVisibility="Auto"
+                      CanContentScroll="True"
+                      >
+            <ScrollViewer.Background>
+                <ImageBrush ImageSource="Images\startimage.jpg" Opacity="0.6" ></ImageBrush>
+            </ScrollViewer.Background>
+            <ZoomAndPan:ZoomAndPanControl  x:Name="zoomAndPanControl"
+                                           MouseDown="zoomAndPanControl_MouseDown"
+                                           MouseUp="zoomAndPanControl_MouseUp"
+                                           MouseMove="zoomAndPanControl_MouseMove"
+                                           MouseWheel="zoomAndPanControl_MouseWheel"
+                                           MouseDoubleClick="zoomAndPanControl_MouseDoubleClick"
+                                           >
+                <Grid>
+                <Image x:Name="content" 
+                   Stretch="None"
+                   >
+                </Image>
+                    <Canvas
+						x:Name="dragZoomCanvas"
+						Visibility="Collapsed"
+						>
+                        <Border 
+							x:Name="dragZoomBorder"
+							BorderBrush="Black"
+							BorderThickness="1"
+							Background="Silver"
+							CornerRadius="1"
+							Opacity="0"
+							/>
+                    </Canvas>
+                </Grid>
+            </ZoomAndPan:ZoomAndPanControl>
+        </ScrollViewer>
+        <Canvas Grid.Column="1" Grid.Row="0"  Grid.RowSpan="2"  Background="{StaticResource GrayBrush8}" >
+        </Canvas>
+        <Canvas Grid.Column="0" Grid.Row="2"  Background="{StaticResource GrayBrush8}" ></Canvas>
+        <Canvas Grid.Column="1" Grid.Row="2"  Background="{StaticResource GrayBrush6}" ></Canvas>
+    </Grid>
+</Controls:MetroWindow>
