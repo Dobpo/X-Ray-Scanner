@@ -327,7 +327,8 @@
                     Controls:TabControlHelper.IsUnderlined="True"
                     >
                 <TabItem Header="Ethernet свойства" 
-                     Controls:ControlsHelper.HeaderFontSize="14">
+                     Controls:ControlsHelper.HeaderFontSize="14"
+                     MouseLeave="MouseLeaveInfo" MouseMove="TabItem_MouseMove">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="150"/>

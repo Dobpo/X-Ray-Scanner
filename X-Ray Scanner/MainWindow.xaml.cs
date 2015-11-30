@@ -208,6 +208,10 @@ namespace X_Ray_Scanner
         {
             StatusInfo.Content = "Эскиз изображения";
         }
+        private void TabItem_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Вкладка настроек подключения к контроллеру";
+        }
         #endregion
 
         #region События для зума изображения
@@ -545,6 +549,7 @@ namespace X_Ray_Scanner
         }
 
         #endregion
+
         
     }
 }
