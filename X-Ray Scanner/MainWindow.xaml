@@ -155,22 +155,19 @@
                     <ImageBrush ImageSource="Images\startimage.jpg" Opacity="0.6"></ImageBrush>
                 </Border.Background>
                 <Image x:Name="ThumbImage" 
-                   Height="200" 
-                   Width="200"
-                   Stretch="Fill" 
+                       Height="200" 
+                       Width="200"
+                       Stretch="Fill" 
+                       MouseMove="ThumbImage_MouseMove" 
+                       MouseLeave="MouseLeaveInfo" 
                  >
                 </Image>
             </Border>
-            <Button x:Name="ShowButton"
-                    Content="Показать"
-                    Canvas.Left="217" 
-                    Canvas.Top="10" 
-                    Width="68" Click="ShowButton_Click"/>
             <Button x:Name="CloseImageButton" 
                     Content="Закрыть" 
-                    Canvas.Left="217" 
+                    Canvas.Left="246" 
                     Canvas.Top="40" 
-                    Width="68" Click="CloseImageButton_Click"/>
+                    Width="74" Click="CloseImageButton_Click"/>
 
             <!--
             Button to zoom in.
@@ -182,7 +179,8 @@
                     Height="36"
                     IsEnabled="False"
                     RenderTransformOrigin="0.5,0.5"
-                    Command="{StaticResource Commands.ZoomIn}"
+                    MouseLeave="MouseLeaveInfo"
+                    Command="{StaticResource Commands.ZoomIn}" MouseMove="ZoomPlusButton_MouseMove"
                     >
                 <Button.RenderTransform>
                     <TransformGroup>
@@ -207,9 +205,10 @@
             	Canvas.Top="250" 
             	Width="36" 
             	Height="36"
-                    IsEnabled="False"
+                IsEnabled="False"
             	RenderTransformOrigin="0.5,0.5"
-                Command="{StaticResource Commands.OneHundredPercent}">
+                MouseLeave="MouseLeaveInfo"
+                Command="{StaticResource Commands.OneHundredPercent}" MouseMove="ZoomRefreshButton_MouseMove">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -235,7 +234,8 @@
             	Height="36"
                 IsEnabled="False"
             	RenderTransformOrigin="0.5,0.5"
-                Command="{StaticResource Commands.Fill}">
+                MouseLeave="MouseLeaveInfo"
+                Command="{StaticResource Commands.Fill}" MouseMove="ZoomExpandButton_MouseMove">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -259,7 +259,8 @@
             	Height="36"
                 IsEnabled="False"
             	RenderTransformOrigin="0.5,0.5"
-                Command="{StaticResource Commands.ZoomOut}">
+                MouseLeave="MouseLeaveInfo"
+                Command="{StaticResource Commands.ZoomOut}" MouseMove="ZoomMinusButton_MouseMove">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -287,7 +288,8 @@
                     SmallChange="10"
                     IsEnabled="False"
                     TickPlacement="TopLeft"
-                    Value="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"
+                    Value="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}" 
+                    MouseLeave="MouseLeaveInfo" MouseMove="ZoomSlider_MouseMove"
                 />
 
             <!--
@@ -299,12 +301,23 @@
                        Foreground="{StaticResource AccentColorBrush}"
                        Canvas.Top="262" 
                        FontWeight="Bold" 
-                       TextAlignment="Right" Width="28"/>
+                       TextAlignment="Right" 
+                       Width="28"
+                       MouseLeave="MouseLeaveInfo" 
+                       MouseMove="TextBlock_MouseMove"/>
             <TextBlock Canvas.Left="118"
                        Foreground="{StaticResource AccentColorBrush}"
                        Text="%" 
                        Canvas.Top="262"
-                       FontWeight="Bold"/>
+                       FontWeight="Bold"
+                       MouseLeave="MouseLeaveInfo"
+                       MouseMove="TextBlock_MouseMove"/>
+            <Button x:Name="OpenFileButton" 
+                    Content="Открыть" 
+                    Canvas.Left="246" 
+                    Canvas.Top="10" 
+                    Width="74" 
+                    Click="OpenFileButton_Click"/>
         </Canvas>
         <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="2">
             <Grid.Resources>
@@ -346,7 +359,7 @@
                              Margin="123,42,0,0" 
                              Text="9670" 
                              VerticalAlignment="Top" 
-                             Width="58" MaxLines="1" MaxLength="4" MouseMove="PortTextBox_MouseMove"/>
+                             Width="58" MaxLines="1" MaxLength="4" MouseMove="PortTextBox_MouseMove" MouseLeave="MouseLeaveInfo"/>
                         <Button Grid.Row="0"
                             x:Name="ConnectButton" 
                             Content="Установить соединение" 
@@ -364,7 +377,9 @@
                     	     TextWrapping="Wrap" 
                     	     Text="" 
                     	     VerticalAlignment="Top" 
-                    	     Width="171" MouseMove="SendDataTextBox_MouseMove" MouseLeave="MouseLeaveInfo"/>
+                    	     Width="171" 
+                             MouseMove="SendDataTextBox_MouseMove" 
+                             MouseLeave="MouseLeaveInfo"/>
                         <Label Grid.Row="0" 
                            x:Name="Label7" 
                     	   Content="Данные для отправки :" 

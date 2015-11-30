@@ -59,40 +59,40 @@ namespace X_Ray_Scanner
             ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageDisconnect);
             ImageConnection.Fill = (Brush)FindResource("DisabledMenuItemForeground"); 
         }
-        
-        private void OpenFileButton_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-
-            if (ofd.ShowDialog() == true)
-            {
-                string fileName = ofd.FileName;
-                Label1.Content = fileName;
-            }
-
-        }
-
-        //Кнопка показат изображение
-        private void ShowImage()
-        {
-            BitmapSource btm = new BitmapImage(new Uri("G:\\Images\\rab_stol.jpg"));
-            zoomAndPanControl.Background = Brushes.LightGray;
-            ThumbImage.Source = btm;
-            content.Source = btm;
-            Label2.Content = btm.DpiX;
-            Label3.Content = btm.DpiY;
-        }
-
 
         /// <summary>
-        /// Событие, показать изображение.
+        /// Событие по нажатию кнопки Открыть, выводит диалоговое окно для 
+        /// выбора изображения.н
         /// </summary>
-        private void ShowButton_Click(object sender, RoutedEventArgs e)
+        private void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowImage();
-            ZoomControlsEnable();
-        }
+            // Configure open file dialog box
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.DefaultExt = ".png";
+            dlg.Filter = "PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg";
 
+            // Show open file dialog box
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                string fileName = dlg.FileName;
+                Label1.Content = fileName;
+                try
+                {
+                    BitmapSource btm = new BitmapImage(new Uri(fileName, UriKind.Absolute));
+                    zoomAndPanControl.Background = Brushes.LightGray;
+                    ThumbImage.Source = btm;
+                    content.Source = btm;
+                    ZoomControlsEnable();
+                }
+                catch (System.NotSupportedException)
+                {
+                    MessageBox.Show("Невозможно открыть изображение, возможно файл поврежден или имеет неизвестный формат.");
+                }
+            }
+        }
+        
         /// <summary>
         /// Событие закрытия главного окна, закрывает TCP соединение если было открыто.
         /// </summary>
@@ -154,16 +154,16 @@ namespace X_Ray_Scanner
             ZoomControlsDisable();
             zoomAndPanControl.AnimatedZoomTo(1.0); //Установить начальный зум.
         }
-        
-        #region Собития для подсказки
-        private void SendDataTextBox_MouseMove(object sender, MouseEventArgs e)
-        {
-            StatusInfo.Content = "Данные для отправки в контроллер";
-        }
 
+        #region Собития для подсказки
         private void MouseLeaveInfo(object sender, MouseEventArgs e)
         {
             StatusInfo.Content = "Готов";
+        }
+
+        private void SendDataTextBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Данные для отправки в контроллер";
         }
 
         private void IpAddressTextBox_MouseMove(object sender, MouseEventArgs e)
@@ -174,6 +174,39 @@ namespace X_Ray_Scanner
         private void PortTextBox_MouseMove(object sender, MouseEventArgs e)
         {
             StatusInfo.Content = "Порт для установки TCP соединения";
+        }
+        private void ZoomSlider_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Переместить для увеличения/уменьшения изображения";
+        }
+
+        private void ZoomPlusButton_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Увеличить изображение";
+        }
+
+        private void ZoomRefreshButton_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Оригинальный размер изображения";
+        }
+
+        private void TextBlock_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Размер изображения";
+        }
+
+        private void ZoomExpandButton_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Растянуть изображение";
+        }
+
+        private void ZoomMinusButton_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Уменьшить изображение";
+        }
+        private void ThumbImage_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Эскиз изображения";
         }
         #endregion
 
@@ -510,6 +543,8 @@ namespace X_Ray_Scanner
                 zoomAndPanControl.AnimatedSnapTo(doubleClickPoint);
             }
         }
+
         #endregion
+        
     }
 }
