@@ -49,6 +49,10 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="TrustSoft.Xaml.ShaderEffects, Version=0.1.1.0, Culture=neutral, PublicKeyToken=324032335e959b35, processorArchitecture=MSIL">
+      <HintPath>..\packages\TrustSoft.Xaml.ShaderEffects.0.1.1.0\lib\NET45\TrustSoft.Xaml.ShaderEffects.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -67,6 +71,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

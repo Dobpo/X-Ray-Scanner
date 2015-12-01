@@ -67,6 +67,10 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="TrustSoft.Xaml.ShaderEffects, Version=0.1.1.0, Culture=neutral, PublicKeyToken=324032335e959b35, processorArchitecture=MSIL">
+      <HintPath>..\packages\TrustSoft.Xaml.ShaderEffects.0.1.1.0\lib\NET45\TrustSoft.Xaml.ShaderEffects.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -128,9 +132,6 @@
       <Project>{002651fc-88a9-422f-8fb4-922aee119e48}</Project>
       <Name>ZoomAndPan</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="startimage.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\eye.png" />
