@@ -112,6 +112,7 @@ namespace X_Ray_Scanner
             ZoomRefreshButton.IsEnabled = true;
             ZoomExpandButton.IsEnabled = true;
             ZoomMinusButton.IsEnabled = true;
+            InvertColorButton.IsEnabled = true;
         }
         
         /// <summary>
@@ -124,6 +125,9 @@ namespace X_Ray_Scanner
             ZoomRefreshButton.IsEnabled = false;
             ZoomExpandButton.IsEnabled = false;
             ZoomMinusButton.IsEnabled = false;
+            InvertColorButton.IsEnabled = false;
+            InvertColorButton.IsChecked = false;
+            InvColButFillImg.Fill = new SolidColorBrush(Color.FromArgb(204, 17, 158, 218));
         }
 
         /// <summary>
@@ -154,6 +158,24 @@ namespace X_Ray_Scanner
             zoomAndPanControl.Background = null;
             ZoomControlsDisable();
             zoomAndPanControl.AnimatedZoomTo(1.0); //Установить начальный зум.
+        }
+
+        /// <summary>
+        /// Событие переключения кнопки инверсии цвета изображения.
+        /// </summary>
+        private void InvertColorButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (InvertColorButton.IsChecked == true)
+            {
+                InvertColorEffect ice = new InvertColorEffect();
+                content.Effect = ice;
+                InvColButFillImg.Fill = Brushes.White;
+            }
+            else
+            {
+                content.Effect = null;
+                InvColButFillImg.Fill = new SolidColorBrush(Color.FromArgb(204, 17, 158, 218));
+            }
         }
 
         #region Собития для подсказки
@@ -208,6 +230,10 @@ namespace X_Ray_Scanner
         private void ThumbImage_MouseMove(object sender, MouseEventArgs e)
         {
             StatusInfo.Content = "Эскиз изображения";
+        }
+        private void InvertColorButton_MouseMove(object sender, MouseEventArgs e)
+        {
+            StatusInfo.Content = "Инвертировать цвет изображения";
         }
         #endregion
 
@@ -544,8 +570,8 @@ namespace X_Ray_Scanner
                 zoomAndPanControl.AnimatedSnapTo(doubleClickPoint);
             }
         }
-
         #endregion
+
         
     }
 }

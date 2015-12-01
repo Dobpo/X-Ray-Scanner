@@ -134,9 +134,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="startimage.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\eye.png" />
   </ItemGroup>
   <ItemGroup>
