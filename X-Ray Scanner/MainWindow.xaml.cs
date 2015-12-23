@@ -570,8 +570,7 @@ namespace X_Ray_Scanner
                 zoomAndPanControl.AnimatedSnapTo(doubleClickPoint);
             }
         }
-        #endregion
 
-        
+        #endregion
     }
 }

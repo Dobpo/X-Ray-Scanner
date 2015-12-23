@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 
@@ -78,6 +79,17 @@ namespace X_Ray_Scanner
             StatusTextBox.Text = "";
         }
 
+        /// <summary>
+        /// Событие по нажатию Enter в SendTextBox, отправляет введенные данные на контроллер.
+        /// </summary>
+        private void SendDataTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SendButton_Click(sender, e);
+            }
+        }
+
         #region "<<<<<<<<<< Ethernet event's >>>>>>>>>>"
         /// <summary>
         /// Устанавливает TCP соединение, по заданому IP адресу и порту(из тект боксов на форме).
@@ -102,23 +114,33 @@ namespace X_Ray_Scanner
         /// <summary>
         /// Функиця обратного вызова для приема данных по TCP соединению.
         /// </summary>
+        /// Доработать отображение принятых данных.
         private void ReadCallBackEthernet(IAsyncResult streamResult)
         {
             try
             {
-                int ToRead = netStream.EndRead(streamResult);
-                byteCount += ToRead;
+                int toRead = netStream.EndRead(streamResult);
+                byteCount += toRead;
                 byte[] tmpBufferBytes = streamResult.AsyncState as byte[];
-                string TempString = null;
-                int TempVar = 0;
-                for (int i = 0; i < ToRead; i+=2)
-                {
-                    TempVar = ethInBuffer[i + 2] << 8 | ethInBuffer[i];
-                    TempString += TempVar.ToString() + " | ";
-                    StatusTextBox.Dispatcher.Invoke(new Action(() => StatusTextBox.Text+= "Принятые данные :" + TempString + "\n"));
-                    netStream.BeginRead(ethInBuffer, 0, ethInBuffer.Length, ReadCallBackEthernet, ethInBuffer);
-                }
 
+                //Сдесь алгоритм преобразования данных получаемых с линеек, в корректном виде,
+                    //для тестирования эхо сервера, времменно в коментарий. 
+                string tempString = null;
+
+                int TempVar = 0;
+
+                for (int i = 0; i < toRead; i += 2)
+                {
+                    TempVar = ethInBuffer[i + 1] << 8 | ethInBuffer[i];
+
+                    tempString += TempVar.ToString() + " | ";
+                }
+                //StatusTextBox.Dispatcher.Invoke(new Action(() => StatusTextBox.Text+= "Принятые данные :" + tempString + "\n"));
+                StatusTextBox.Dispatcher.Invoke(new Action(() => StatusTextBox.Text = "Принятые данные :" + tempString + "\n"));
+
+                //StatusTextBox.Dispatcher.Invoke(new Action(() => { StatusTextBox.Text += Encoding.ASCII.GetString(tmpBufferBytes, 0 ,toRead); }));
+
+                netStream.BeginRead(ethInBuffer, 0, ethInBuffer.Length, ReadCallBackEthernet, ethInBuffer);
             }
             catch (Exception ex)
             {
