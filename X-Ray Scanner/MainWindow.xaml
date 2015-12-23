@@ -398,7 +398,7 @@
                     	     VerticalAlignment="Top" 
                     	     Width="171" 
                              MouseMove="SendDataTextBox_MouseMove" 
-                             MouseLeave="MouseLeaveInfo"/>
+                             MouseLeave="MouseLeaveInfo" KeyDown="SendDataTextBox_KeyDown"/>
                         <Label Grid.Row="0" 
                            x:Name="Label7" 
                     	   Content="Данные для отправки :" 
