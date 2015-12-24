@@ -336,6 +336,11 @@
                     </Canvas>
                 </Viewbox>
             </ToggleButton>
+            <Button x:Name="TestButton" 
+                    Content="Test Button" 
+                    Canvas.Left="243" 
+                    Canvas.Top="187" 
+                    Width="80" Click="TestButton_Click"/>
         </Canvas>
         <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="2">
             <Grid.Resources>

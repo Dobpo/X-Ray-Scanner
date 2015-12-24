@@ -19,6 +19,7 @@ namespace X_Ray_Scanner
         byte[] ethInBuffer = new Byte[2048];
         private int byteCount;
 
+        #region События для кнопок
         /// <summary>
         /// Событие по клику, попытатся установить соединение.
         /// </summary>
@@ -89,6 +90,7 @@ namespace X_Ray_Scanner
                 SendButton_Click(sender, e);
             }
         }
+        #endregion
 
         #region "<<<<<<<<<< Ethernet event's >>>>>>>>>>"
         /// <summary>
@@ -99,7 +101,7 @@ namespace X_Ray_Scanner
             try
             {
                 tcpClient = new TcpClient(IpAddressTextBox.Text, Convert.ToInt32(PortTextBox.Text));
-                netStream = tcpClient.GetStream(); netStream.Flush();
+                netStream = tcpClient.GetStream(); 
                 netStream.BeginRead(ethInBuffer, 0, ethInBuffer.Length, ReadCallBackEthernet, ethInBuffer);
                 return true;
             }
@@ -132,7 +134,6 @@ namespace X_Ray_Scanner
                 for (int i = 0; i < toRead; i += 2)
                 {
                     TempVar = ethInBuffer[i + 1] << 8 | ethInBuffer[i];
-
                     tempString += TempVar.ToString() + " | ";
                 }
                 //StatusTextBox.Dispatcher.Invoke(new Action(() => StatusTextBox.Text+= "Принятые данные :" + tempString + "\n"));

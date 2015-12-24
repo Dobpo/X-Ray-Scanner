@@ -572,5 +572,13 @@ namespace X_Ray_Scanner
         }
 
         #endregion
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text += "ReceiveTimeout :" + tcpClient.ReceiveTimeout + "\n";
+            StatusTextBox.Text += "SendTimeout :" + tcpClient.SendTimeout + "\n";
+            StatusTextBox.Text += "ReceiveBufferSize :" + tcpClient.ReceiveBufferSize + "\n";
+            StatusTextBox.Text += "SendBufferSize :" + tcpClient.SendBufferSize + "\n";
+        }
     }
 }
