@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Threading;
 
 namespace X_Ray_Scanner
@@ -13,6 +13,10 @@ namespace X_Ray_Scanner
         //Количество байт для отправки
         private int _bytesToSend;
 
+        //IpAddress и Port
+        private string _ipAddress;
+        private int _port;
+        
         //Вх./Вых. буффер для данных.
         public readonly byte[] InDataBuffer = new byte[1024];
         public readonly byte[] OutDataBuffer = new byte[1024];
@@ -71,10 +75,17 @@ namespace X_Ray_Scanner
             _backSend.RunWorkerAsync();
         }
 
+        //Задаем IpAddress и Port
+        public void SetIpAndPort(string ipAddress, int port)
+        {
+            _ipAddress = ipAddress;
+            _port = port;
+        }
+
         //Для делегата обработки события установки соединения.
         private void ConnectEventHandler(object sender, DoWorkEventArgs e)
         {
-            var connectionResult = MySocket.BeginConnect("192.168.0.47", 9670, null, null);
+            var connectionResult = MySocket.BeginConnect(_ipAddress, _port, null, null);//("192.168.0.47", 9670, null, null);
             if (!connectionResult.AsyncWaitHandle.WaitOne(100, true)) MySocket.Close();
             else MySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
             Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ConnectEvent, this)); }));
