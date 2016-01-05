@@ -416,7 +416,8 @@
                     	    Margin="198,94,0,0" 
                     	    VerticalAlignment="Top" 
                     	    Height="20"
-                    	    Width="136" /><!--Click="SendButton_Click"-->
+                    	    Width="136" 
+                            Click="SendButton_Click"/>
                         <Label Grid.Row="0" 
                            x:Name="Label8" 
                     	   Content="Обмена данными :" 

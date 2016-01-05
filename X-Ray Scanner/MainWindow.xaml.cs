@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -83,7 +84,14 @@ namespace X_Ray_Scanner
             try { isConnected = _asyncTcpClient.MySocket.Connected; }
             catch { isConnected = false; }
             if (!isConnected) _asyncTcpClient.Connect();
+            //else AsyncTcpClient_CheckStatus();
         }
+
+
+        //private void AsyncTcpClient_CheckStatus()
+        //{
+        //    _asyncTcpClient.OutDataBuffer[0] = 0x1F; _asyncTcpClient.OutDataBuffer[1] = 0xF1; _asyncTcpClient.Send(2);
+        //}
 
         //Событие установки TCP соединения.
         void AsyncTcpClient_Connect(object sender, RoutedEventArgs e)
@@ -117,11 +125,38 @@ namespace X_Ray_Scanner
             StatusTextBox.Text += "Data was recived. \n";
         }
 
+        //Событие клик Установить соединение
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
             _asyncTcpClient.SetIpAndPort(IpAddressTextBox.Text, Convert.ToInt32(PortTextBox.Text));
             StatusTimer_Tick(null, null);
             _statusTimer.Start();
+        }
+
+        /// <summary>
+        /// Событие по клику, отправить данные по установленому TCP слединению.
+        /// </summary>
+        private void SendButton_Click(object sender, RoutedEventArgs e)
+        {
+            _asyncTcpClient.OutDataBuffer[1] = 10;
+            //_asyncTcpClient.OutDataBuffer = Encoding.ASCII.GetBytes(SendDataTextBox.Text);
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Событие по изминению текста, перемещает скрол в конец текстбокса.
+        /// </summary>
+        private void StatusTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            StatusTextBox.ScrollToEnd();
+        }
+
+        /// <summary>
+        /// Событие по клику, очищает содержимое текстбокса.
+        /// </summary>
+        private void CleanButton_Click(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text = "";
         }
         #endregion
 
