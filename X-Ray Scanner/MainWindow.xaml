@@ -419,37 +419,39 @@
                     	    Width="136" 
                             Click="SendButton_Click"/>
                         <Label Grid.Row="0" 
-                           x:Name="Label8" 
-                    	   Content="Обмена данными :" 
-                    	   HorizontalAlignment="Left" 
-                    	   Margin="10,119,0,0" 
-                    	   VerticalAlignment="Top"/>
+                               x:Name="Label8" 
+                    	       Content="Обмена данными :" 
+                    	       HorizontalAlignment="Left" 
+                    	       Margin="10,119,0,0" 
+                    	       VerticalAlignment="Top"/>
                         <TextBox x:Name="StatusTextBox" 
-                             Grid.Row="1" 
-                             TextWrapping="Wrap" 
-                             Text="Начало работы.&#x0a;"
-                             VerticalScrollBarVisibility="Visible" 
-                             AcceptsReturn="True" 
-                             IsReadOnly="True"/> 
-                             <!--TextChanged="StatusTextBox_TextChanged"-->
+                                 Grid.Row="1" 
+                                 TextWrapping="Wrap" 
+                                 Text="Начало работы.&#x0a;"
+                                 VerticalScrollBarVisibility="Visible" 
+                                 AcceptsReturn="True" 
+                                 IsReadOnly="True"
+                                 TextChanged="StatusTextBox_TextChanged"/>
                         <Button Grid.Row="0" x:Name="CleanButton" 
-                            Content="Очистить поле"
-                            HorizontalAlignment="Left"
-                            Margin="198,120,0,0" 
-                            VerticalAlignment="Top"
-                            Width="136"/> <!--Click="CleanButton_Click"-->
+                                Content="Очистить поле"
+                                HorizontalAlignment="Left"
+                                Margin="198,120,0,0" 
+                                VerticalAlignment="Top"
+                                Width="136" 
+                                Click="CleanButton_Click"/> 
                         <Button Grid.Row="0"
-                     	x:Name="DisconnectButton" 
-                     	Content="Разорвать соединение" 
-                     	HorizontalAlignment="Left" 
-                     	Margin="198,68,0,0" 
-                     	VerticalAlignment="Top" 
-                     	Height="20"
-                     	Width="136"/> <!--Click="DisconnectButton_Click"-->
+                     	        x:Name="DisconnectButton" 
+                     	        Content="Разорвать соединение" 
+                     	        HorizontalAlignment="Left" 
+                     	        Margin="198,68,0,0" 
+                     	        VerticalAlignment="Top" 
+                     	        Height="20"
+                     	        Width="136" 
+                                Click="DisconnectButton_Click"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Обработка изображения" 
-                     Controls:ControlsHelper.HeaderFontSize="14">
+                         Controls:ControlsHelper.HeaderFontSize="14">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="150"></ColumnDefinition>

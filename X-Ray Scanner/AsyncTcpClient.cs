@@ -31,7 +31,8 @@ namespace X_Ray_Scanner
         private readonly BackgroundWorker _backSend = new BackgroundWorker();
 
         //Событие установки TCP соединения.
-        private static readonly RoutedEvent ConnectEvent = EventManager.RegisterRoutedEvent("ConnectData", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
+        private static readonly RoutedEvent ConnectEvent = EventManager.RegisterRoutedEvent("ConnectData",
+            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler ConnectData
         {
             add { AddHandler(ConnectEvent, value); }
@@ -39,7 +40,8 @@ namespace X_Ray_Scanner
         }
 
         //Событие отправки данных по TCP соединению.
-        private static readonly RoutedEvent SendEvent = EventManager.RegisterRoutedEvent("SendData", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
+        private static readonly RoutedEvent SendEvent = EventManager.RegisterRoutedEvent("SendData",
+            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler SendData
         {
             add { AddHandler(SendEvent, value); }
@@ -47,11 +49,21 @@ namespace X_Ray_Scanner
         }
 
         //Событие получения данных по TCP соединению.
-        private static readonly RoutedEvent ReceiveEvent = EventManager.RegisterRoutedEvent("ReceiveData", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
+        private static readonly RoutedEvent ReceiveEvent = EventManager.RegisterRoutedEvent("ReceiveData",
+            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler ReceiveData
         {
             add { AddHandler(ReceiveEvent, value); }
             remove { RemoveHandler(ReceiveEvent, value); }
+        }
+
+        //Событие разрыва соединения.
+        private static readonly RoutedEvent DisconnectEvent = EventManager.RegisterRoutedEvent("DisconnectData",
+            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
+        public event RoutedEventHandler DisconnectData
+        {
+            add { AddHandler(DisconnectEvent, value);}
+            remove { RemoveHandler(DisconnectEvent, value);}
         }
 
         //Конструктор
@@ -66,6 +78,13 @@ namespace X_Ray_Scanner
         {
             MySocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _backConnect.RunWorkerAsync();
+        }
+
+        //Метод закрытия соединения.
+        public void Close()
+        {
+            MySocket.Close();
+            Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(DisconnectEvent, this)); }));
         }
 
         //Метод для вызова события отсылки данных в отдельном потоке.

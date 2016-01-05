@@ -68,6 +68,7 @@ namespace X_Ray_Scanner
             _asyncTcpClient.ConnectData += AsyncTcpClient_Connect;
             _asyncTcpClient.SendData += AsyncTcpClient_SendData;
             _asyncTcpClient.ReceiveData += AsyncTcpClient_ReciveData;
+            _asyncTcpClient.DisconnectData += AsyncTcpClient_DisconnectData;
 
             _statusTimer.Tick += StatusTimer_Tick;
             _statusTimer.Interval = new TimeSpan(0, 0, 3);
@@ -125,6 +126,15 @@ namespace X_Ray_Scanner
             StatusTextBox.Text += "Data was recived. \n";
         }
 
+        //Событие разрыва соединения.
+        private void AsyncTcpClient_DisconnectData(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text += "Соединение разорвано.\n";
+            ConnectionInfoLabel.Content = "Соединение не установлено";
+            ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageDisconnect);
+            ImageConnection.Fill = (Brush)FindResource("DisabledMenuItemForeground");
+        }
+
         //Событие клик Установить соединение
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
@@ -157,6 +167,25 @@ namespace X_Ray_Scanner
         private void CleanButton_Click(object sender, RoutedEventArgs e)
         {
             StatusTextBox.Text = "";
+        }
+
+        /// <summary>
+        /// Событие по клику, разорвать TCP соединение.
+        /// </summary>
+        private void DisconnectButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_asyncTcpClient.MySocket.Connected)
+                    _asyncTcpClient.Close();
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Source + ex.Message);
+            }
         }
         #endregion
 
