@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using ZoomAndPan;
@@ -54,13 +56,141 @@ namespace X_Ray_Scanner
         private bool prevZoomRectSet = false;
         #endregion
 
+        //Клиент для подключения по Ethernet.
+        private readonly AsyncTcpClient _asyncTcpClient = new AsyncTcpClient();
+        //Таймер для проверки и установки соединения.
+        private readonly DispatcherTimer _statusTimer = new DispatcherTimer();
+
         public MainWindow()
         {
             InitializeComponent();
+
+            _asyncTcpClient.ConnectData += AsyncTcpClient_Connect;
+            _asyncTcpClient.SendData += AsyncTcpClient_SendData;
+            _asyncTcpClient.ReceiveData += AsyncTcpClient_ReciveData;
+            _asyncTcpClient.DisconnectData += AsyncTcpClient_DisconnectData;
+
+            _statusTimer.Tick += StatusTimer_Tick;
+            _statusTimer.Interval = new TimeSpan(0, 0, 3);
+
             ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageDisconnect);
             ImageConnection.Fill = (Brush)FindResource("DisabledMenuItemForeground"); 
         }
 
+        #region Для TCP соединения.
+
+        private void StatusTimer_Tick(object sender, EventArgs e)
+        {
+            bool isConnected;
+            try { isConnected = _asyncTcpClient.MySocket.Connected; }
+            catch { isConnected = false; }
+            if (!isConnected) _asyncTcpClient.Connect();
+            else AsyncTcpClient_CheckStatus();
+        }
+
+
+        private void AsyncTcpClient_CheckStatus()
+        {
+            _asyncTcpClient.OutDataBuffer[0] = 0x1F; _asyncTcpClient.OutDataBuffer[1] = 0xF1; _asyncTcpClient.Send(2);
+        }
+
+        //Событие установки TCP соединения.
+        void AsyncTcpClient_Connect(object sender, RoutedEventArgs e)
+        {
+            if (_asyncTcpClient.MySocket.Connected)
+            {
+                StatusTextBox.Text += "Установлено соединение IP: " + IpAddressTextBox.Text + " Port: " +
+                                        PortTextBox.Text + "\n";
+                ConnectionInfoLabel.Content = "Соединение установлено";
+                ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageConnect);
+                ImageConnection.Fill = (Brush)FindResource("HighlightBrush");
+            }
+            else
+            {
+                StatusTextBox.Text += "Неудачная попытка установить соединеие.\n";
+                ConnectionInfoLabel.Content = "Соединение не установлено";
+                ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageDisconnect);
+                ImageConnection.Fill = (Brush)FindResource("DisabledMenuItemForeground");
+            }
+        }
+
+        //Событие отправки данных по TCP.
+        private void AsyncTcpClient_SendData(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text += "Data was send. \n";
+        }
+
+        //Событие получения данных по TCP.
+        private void AsyncTcpClient_ReciveData(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text += "Data was recived. \n";
+        }
+
+        //Событие разрыва соединения.
+        private void AsyncTcpClient_DisconnectData(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text += "Соединение разорвано.\n";
+            ConnectionInfoLabel.Content = "Соединение не установлено";
+            ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageDisconnect);
+            ImageConnection.Fill = (Brush)FindResource("DisabledMenuItemForeground");
+        }
+
+        //Событие клик Установить соединение
+        private void ConnectButton_Click(object sender, RoutedEventArgs e)
+        {
+            _asyncTcpClient.SetIpAndPort(IpAddressTextBox.Text, Convert.ToInt32(PortTextBox.Text));
+            StatusTimer_Tick(null, null);
+            _statusTimer.Start();
+        }
+
+        /// <summary>
+        /// Событие по клику, отправить данные по установленому TCP слединению.
+        /// </summary>
+        private void SendButton_Click(object sender, RoutedEventArgs e)
+        {
+            _asyncTcpClient.OutDataBuffer[1] = 10;
+            //_asyncTcpClient.OutDataBuffer = Encoding.ASCII.GetBytes(SendDataTextBox.Text);
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Событие по изминению текста, перемещает скрол в конец текстбокса.
+        /// </summary>
+        private void StatusTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            StatusTextBox.ScrollToEnd();
+        }
+
+        /// <summary>
+        /// Событие по клику, очищает содержимое текстбокса.
+        /// </summary>
+        private void CleanButton_Click(object sender, RoutedEventArgs e)
+        {
+            StatusTextBox.Text = "";
+        }
+
+        /// <summary>
+        /// Событие по клику, разорвать TCP соединение.
+        /// </summary>
+        private void DisconnectButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_asyncTcpClient.MySocket.Connected)
+                    _asyncTcpClient.Close();
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Source + ex.Message);
+            }
+        }
+        #endregion
+
+
+        #region События кнопок
         /// <summary>
         /// Событие по нажатию кнопки Открыть, выводит диалоговое окно для 
         /// выбора изображения.н
@@ -99,7 +229,7 @@ namespace X_Ray_Scanner
         /// </summary>
         private void MainWindow_Closed(object sender, EventArgs e)
         {
-            DisconnectEthernet();
+            //DisconnectEthernet();
         }
 
         /// <summary>
@@ -177,6 +307,7 @@ namespace X_Ray_Scanner
                 InvColButFillImg.Fill = new SolidColorBrush(Color.FromArgb(204, 17, 158, 218));
             }
         }
+        #endregion
 
         #region Собития для подсказки
         private void MouseLeaveInfo(object sender, MouseEventArgs e)
@@ -577,5 +708,13 @@ namespace X_Ray_Scanner
         }
 
         #endregion
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            //StatusTextBox.Text += "ReceiveTimeout :" + tcpClient.ReceiveTimeout + "\n";
+            //StatusTextBox.Text += "SendTimeout :" + tcpClient.SendTimeout + "\n";
+            //StatusTextBox.Text += "ReceiveBufferSize :" + tcpClient.ReceiveBufferSize + "\n";
+            //StatusTextBox.Text += "SendBufferSize :" + tcpClient.SendBufferSize + "\n";
+        }
     }
 }

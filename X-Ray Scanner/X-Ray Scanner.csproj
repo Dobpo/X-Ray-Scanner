@@ -80,6 +80,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AsyncTcpClient.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
     <Compile Include="CustomTemplateImage.cs" />
     <Compile Include="EthernetTabControl.cs" />
