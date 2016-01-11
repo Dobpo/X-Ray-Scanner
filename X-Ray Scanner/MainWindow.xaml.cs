@@ -85,14 +85,14 @@ namespace X_Ray_Scanner
             try { isConnected = _asyncTcpClient.MySocket.Connected; }
             catch { isConnected = false; }
             if (!isConnected) _asyncTcpClient.Connect();
-            //else AsyncTcpClient_CheckStatus();
+            else AsyncTcpClient_CheckStatus();
         }
 
 
-        //private void AsyncTcpClient_CheckStatus()
-        //{
-        //    _asyncTcpClient.OutDataBuffer[0] = 0x1F; _asyncTcpClient.OutDataBuffer[1] = 0xF1; _asyncTcpClient.Send(2);
-        //}
+        private void AsyncTcpClient_CheckStatus()
+        {
+            _asyncTcpClient.OutDataBuffer[0] = 0x1F; _asyncTcpClient.OutDataBuffer[1] = 0xF1; _asyncTcpClient.Send(2);
+        }
 
         //Событие установки TCP соединения.
         void AsyncTcpClient_Connect(object sender, RoutedEventArgs e)

@@ -17,7 +17,6 @@
         FocusManager.FocusedElement="{Binding ElementName=scroller}"
         >
     <Window.Resources>
-
         <!-- UI commands. -->
         <RoutedUICommand x:Key="Commands.ZoomOut" />
         <RoutedUICommand x:Key="Commands.ZoomIn" />
@@ -30,41 +29,31 @@
         It is used to convert the value of 'ContentScale' to the percentage zoom level that is displayed in the UI.
         -->
         <xRayScanner:ScaleToPercentConverter 
-            x:Key="scaleToPercentConverter" 
-            />
+            x:Key="scaleToPercentConverter"/>
 
         <!-- 
         Converts a color value to a brush.
         -->
         <xRayScanner:ColorToBrushConverter 
-            x:Key="colorToBrushConverter"
-            />
-
-
+            x:Key="colorToBrushConverter"/>
     </Window.Resources>
 
     <Window.InputBindings>
-
         <!--
         Bind keys to commands.
         -->
-        <KeyBinding
-			Key="Minus"
-			Command="{StaticResource Commands.ZoomOut}"
-			/>
-        <KeyBinding
-			Key="Plus"
-			Command="{StaticResource Commands.ZoomIn}"
-			/>
-        <KeyBinding
-			Key="Back"
-			Command="{StaticResource Commands.JumpBackToPrevZoom}"
-			/>
-
+        <KeyBinding Key="Minus" 
+                    Command="{StaticResource Commands.ZoomOut}"
+                    />
+        <KeyBinding Key="Plus"
+                    Command="{StaticResource Commands.ZoomIn}"
+                    />
+        <KeyBinding Key="Back" 
+                    Command="{StaticResource Commands.JumpBackToPrevZoom}"
+                    />
     </Window.InputBindings>
 
     <Window.CommandBindings>
-
         <!--
         Bind commands to event handlers.
         -->
@@ -103,8 +92,7 @@
             <RowDefinition x:Name="GraphicsRowDefinition"  Height="0"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <StatusBar 
-                   Grid.Row="3" 
+        <StatusBar Grid.Row="3" 
                    Grid.ColumnSpan="3"
                    >
             <StatusBar.ItemsPanel>
@@ -201,14 +189,14 @@
             The 100% button.  Causes the content to be scaled to 100 percent.
             -->
             <Button x:Name="ZoomRefreshButton" 
-            	Canvas.Left="50" 
-            	Canvas.Top="250" 
-            	Width="36" 
-            	Height="36"
-                IsEnabled="False"
-            	RenderTransformOrigin="0.5,0.5"
-                MouseLeave="MouseLeaveInfo"
-                Command="{StaticResource Commands.OneHundredPercent}" MouseMove="ZoomRefreshButton_MouseMove">
+            	    Canvas.Left="50" 
+            	    Canvas.Top="250" 
+            	    Width="36" 
+            	    Height="36"
+                    IsEnabled="False"
+            	    RenderTransformOrigin="0.5,0.5"
+                    MouseLeave="MouseLeaveInfo"
+                    Command="{StaticResource Commands.OneHundredPercent}" MouseMove="ZoomRefreshButton_MouseMove">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -228,14 +216,14 @@
             The fill button.  Causes the content to be scaled so that it fits in the viewport.
             -->
             <Button x:Name="ZoomExpandButton" 
-            	Canvas.Left="134" 
-            	Canvas.Top="250" 
-            	Width="36" 
-            	Height="36"
-                IsEnabled="False"
-            	RenderTransformOrigin="0.5,0.5"
-                MouseLeave="MouseLeaveInfo"
-                Command="{StaticResource Commands.Fill}" MouseMove="ZoomExpandButton_MouseMove">
+            	    Canvas.Left="134" 
+            	    Canvas.Top="250" 
+            	    Width="36" 
+            	    Height="36"
+                    IsEnabled="False"
+            	    RenderTransformOrigin="0.5,0.5"
+                    MouseLeave="MouseLeaveInfo"
+                    Command="{StaticResource Commands.Fill}" MouseMove="ZoomExpandButton_MouseMove">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -290,8 +278,9 @@
                     IsEnabled="False"
                     TickPlacement="TopLeft"
                     Value="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}" 
-                    MouseLeave="MouseLeaveInfo" MouseMove="ZoomSlider_MouseMove"
-                />
+                    MouseLeave="MouseLeaveInfo" 
+                    MouseMove="ZoomSlider_MouseMove"
+                    />
 
             <!--
             This is the label that shows what the current zoom level
@@ -357,67 +346,76 @@
                             <RowDefinition Height="261*"/>
                         </Grid.RowDefinitions>
                         <Label x:Name="Label5" 
-                           Content="IP адресс :" 
-                           HorizontalAlignment="Left" 
-                           Margin="10,10,0,0" 
-                           VerticalAlignment="Top"/>
+                               Content="IP адресс :" 
+                               HorizontalAlignment="Left" 
+                               Margin="10,10,0,0" 
+                               VerticalAlignment="Top"/>
                         <TextBox Grid.Row="0"
-                             x:Name="IpAddressTextBox" 
-                             HorizontalAlignment="Left" 
-                             Height="20" 
-                             Margin="10,42,0,0" 
-                             Text="192.168.0.48" 
-                             VerticalAlignment="Top" Width="99" MaxLines="1" MaxLength="15" MouseMove="IpAddressTextBox_MouseMove" MouseLeave="MouseLeaveInfo"/>
+                                 x:Name="IpAddressTextBox" 
+                                 HorizontalAlignment="Left" 
+                                 Height="20" 
+                                 Margin="10,42,0,0" 
+                                 Text="192.168.0.48" 
+                                 VerticalAlignment="Top" 
+                                 Width="99" 
+                                 MaxLines="1" 
+                                 MaxLength="15" 
+                                 MouseMove="IpAddressTextBox_MouseMove" 
+                                 MouseLeave="MouseLeaveInfo"/>
                         <Label Grid.Row="0"
-                           x:Name="Label6" 
-                           Content="Порт :" 
-                           HorizontalAlignment="Left" 
-                           Margin="117,10,0,0" 
-                           VerticalAlignment="Top" 
-                           RenderTransformOrigin="0.316,-0.077"/>
+                               x:Name="Label6" 
+                               Content="Порт :" 
+                               HorizontalAlignment="Left" 
+                               Margin="117,10,0,0" 
+                               VerticalAlignment="Top" 
+                               RenderTransformOrigin="0.316,-0.077"/>
                         <TextBox Grid.Row="0"
-                             x:Name="PortTextBox" 
-                             HorizontalAlignment="Left" 
-                             Height="20" 
-                             Margin="123,42,0,0" 
-                             Text="9670" 
-                             VerticalAlignment="Top" 
-                             Width="58" MaxLines="1" MaxLength="4" MouseMove="PortTextBox_MouseMove" MouseLeave="MouseLeaveInfo"/>
+                                 x:Name="PortTextBox" 
+                                 HorizontalAlignment="Left" 
+                                 Height="20" 
+                                 Margin="123,42,0,0" 
+                                 Text="9670" 
+                                 VerticalAlignment="Top" 
+                                 Width="58" 
+                                 MaxLines="1" 
+                                 MaxLength="4" 
+                                 MouseMove="PortTextBox_MouseMove" 
+                                 MouseLeave="MouseLeaveInfo"/>
                         <Button Grid.Row="0"
-                            x:Name="ConnectButton" 
-                            Content="Установить соединение" 
-                            HorizontalAlignment="Left" 
-                            Margin="198,41,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="20"
-                            Width="136"
-                            Click="ConnectButton_Click"/> 
+                                x:Name="ConnectButton" 
+                                Content="Установить соединение" 
+                                HorizontalAlignment="Left" 
+                                Margin="198,41,0,0" 
+                                VerticalAlignment="Top" 
+                                Height="20"
+                                Width="136"
+                                Click="ConnectButton_Click"/> 
                         <TextBox Grid.Row="0"
-                             x:Name="SendDataTextBox" 
-                    	     HorizontalAlignment="Left" 
-                    	     Height="20" 
-                    	     Margin="10,94,0,0" 
-                    	     TextWrapping="Wrap" 
-                    	     Text="" 
-                    	     VerticalAlignment="Top" 
-                    	     Width="171" 
-                             MouseMove="SendDataTextBox_MouseMove" 
-                             MouseLeave="MouseLeaveInfo"/> <!--KeyDown="SendDataTextBox_KeyDown"-->
+                                 x:Name="SendDataTextBox" 
+                    	         HorizontalAlignment="Left" 
+                    	         Height="20" 
+                    	         Margin="10,94,0,0" 
+                    	         TextWrapping="Wrap" 
+                    	         Text="" 
+                    	         VerticalAlignment="Top" 
+                    	         Width="171" 
+                                 MouseMove="SendDataTextBox_MouseMove" 
+                                 MouseLeave="MouseLeaveInfo"/> <!--KeyDown="SendDataTextBox_KeyDown"-->
                         <Label Grid.Row="0" 
-                           x:Name="Label7" 
-                    	   Content="Данные для отправки :" 
-                    	   HorizontalAlignment="Left" 
-                    	   Margin="10,68,0,0" 
-                    	   VerticalAlignment="Top"/>
+                               x:Name="Label7" 
+                    	       Content="Данные для отправки :" 
+                    	       HorizontalAlignment="Left" 
+                    	       Margin="10,68,0,0" 
+                    	       VerticalAlignment="Top"/>
                         <Button Grid.Row="0" 
-                            x:Name="SendButton" 
-                    	    Content="Отправить данные" 
-                    	    HorizontalAlignment="Left" 
-                    	    Margin="198,94,0,0" 
-                    	    VerticalAlignment="Top" 
-                    	    Height="20"
-                    	    Width="136" 
-                            Click="SendButton_Click"/>
+                                x:Name="SendButton" 
+                    	        Content="Отправить данные" 
+                    	        HorizontalAlignment="Left" 
+                    	        Margin="198,94,0,0" 
+                    	        VerticalAlignment="Top" 
+                    	        Height="20"
+                    	        Width="136" 
+                                Click="SendButton_Click"/>
                         <Label Grid.Row="0" 
                                x:Name="Label8" 
                     	       Content="Обмена данными :" 
@@ -462,34 +460,34 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Controls:ToggleSwitch Grid.Column="0" Grid.Row="0"
-                                   x:Name="EnabledSwitchGamma"
-                                   IsChecked="False"
-                                   OnLabel="Enabled"
-                                   OffLabel="Disabled" IsCheckedChanged="IsCheckedChange_SwitchGamma"  
-                                   />
+                                               x:Name="EnabledSwitchGamma"
+                                               IsChecked="False"
+                                               OnLabel="Enabled"
+                                               OffLabel="Disabled" 
+                                               IsCheckedChanged="IsCheckedChange_SwitchGamma" />
                         <Label Grid.Column="0" Grid.Row="1" 
-                            x:Name="Label1" 
-                           Content="Label" 
-                           HorizontalAlignment="Left" 
-                           Margin="10,10,0,0" 
-                           VerticalAlignment="Top"/>
-                        <Label x:Name="Label2"  Grid.Column="0" Grid.Row="1"
-                           Content="Label" 
-                           HorizontalAlignment="Left" 
-                           Margin="10,40,0,0"
-                           VerticalAlignment="Top"/>
+                               x:Name="Label1" 
+                               Content="Label" 
+                               HorizontalAlignment="Left" 
+                               Margin="10,10,0,0" 
+                               VerticalAlignment="Top"/>
+                        <Label Grid.Column="0" Grid.Row="1"
+                               x:Name="Label2"
+                               Content="Label" 
+                               HorizontalAlignment="Left" 
+                               Margin="10,40,0,0"
+                               VerticalAlignment="Top"/>
                         <Label  Grid.Column="0" Grid.Row="1"
-                            x:Name="Label3" 
-                           Content="Label" 
-                           HorizontalAlignment="Left"
-                           Margin="10,70,0,0" 
-                           VerticalAlignment="Top"/>
+                                x:Name="Label3" 
+                                Content="Label" 
+                                HorizontalAlignment="Left"
+                                Margin="10,70,0,0" 
+                                VerticalAlignment="Top"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Дополнительные настройки"
                      Controls:ControlsHelper.HeaderFontSize="14"
                      >
-
                 </TabItem>
             </TabControl>
         </Grid>
@@ -517,21 +515,20 @@
                                            >
                 <Grid>
                     <Image x:Name="content" 
-                   Stretch="None"
-                   >
+                           Stretch="None"
+                    >
                     </Image>
                     <Canvas
 						x:Name="dragZoomCanvas"
 						Visibility="Collapsed"
 						>
-                        <Border 
-							x:Name="dragZoomBorder"
-							BorderBrush="Black"
-							BorderThickness="1"
-							Background="Silver"
-							CornerRadius="1"
-							Opacity="0"
-							/>
+                        <Border x:Name="dragZoomBorder"
+							    BorderBrush="Black"
+							    BorderThickness="1"
+							    Background="Silver"
+							    CornerRadius="1"
+							    Opacity="0"
+							    />
                     </Canvas>
                 </Grid>
             </ZoomAndPan:ZoomAndPanControl>
