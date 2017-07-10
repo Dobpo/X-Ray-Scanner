@@ -14,6 +14,8 @@ namespace X_Ray_Scanner
         public int Width { get; set; }
         public int Height { get; set; }
 
+        public string testGit;
+
         public XRayImage(int width, int height)
         {
             Width = width;
