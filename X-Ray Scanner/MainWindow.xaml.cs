@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -56,8 +55,6 @@ namespace X_Ray_Scanner
         private bool prevZoomRectSet = false;
         #endregion
 
-        //Клиент для подключения по Ethernet.
-        private readonly AsyncTcpClient _asyncTcpClient = new AsyncTcpClient();
         //Таймер для проверки и установки соединения.
         private readonly DispatcherTimer _statusTimer = new DispatcherTimer();
 
@@ -65,10 +62,10 @@ namespace X_Ray_Scanner
         {
             InitializeComponent();
 
-            _asyncTcpClient.ConnectData += AsyncTcpClient_Connect;
-            _asyncTcpClient.SendData += AsyncTcpClient_SendData;
-            _asyncTcpClient.ReceiveData += AsyncTcpClient_ReciveData;
-            _asyncTcpClient.DisconnectData += AsyncTcpClient_DisconnectData;
+            AsyncTcpClient.GetInstance().ConnectData += AsyncTcpClient_Connect;
+            AsyncTcpClient.GetInstance().SendData += AsyncTcpClient_SendData;
+            AsyncTcpClient.GetInstance().ReceiveData += AsyncTcpClient_ReciveData;
+            AsyncTcpClient.GetInstance().DisconnectData += AsyncTcpClient_DisconnectData;
 
             _statusTimer.Tick += StatusTimer_Tick;
             _statusTimer.Interval = new TimeSpan(0, 0, 3);
@@ -82,28 +79,31 @@ namespace X_Ray_Scanner
         private void StatusTimer_Tick(object sender, EventArgs e)
         {
             bool isConnected;
-            try { isConnected = _asyncTcpClient.MySocket.Connected; }
+            try { isConnected = AsyncTcpClient.IsConected(); }
             catch { isConnected = false; }
-            if (!isConnected) _asyncTcpClient.Connect();
+            if (!isConnected) AsyncTcpClient.GetInstance().ConnectTo(IpAddressTextBox.Text, Convert.ToInt32(PortTextBox.Text));
             else AsyncTcpClient_CheckStatus();
         }
 
 
         private void AsyncTcpClient_CheckStatus()
         {
-            _asyncTcpClient.OutDataBuffer[0] = 0x1F; _asyncTcpClient.OutDataBuffer[1] = 0xF1; _asyncTcpClient.Send(2);
+            AsyncTcpClient.GetInstance().OutDataBuffer[0] = 0x1F;
+            AsyncTcpClient.GetInstance().OutDataBuffer[1] = 0xF1;
+            AsyncTcpClient.GetInstance().Send(2);
         }
 
         //Событие установки TCP соединения.
         void AsyncTcpClient_Connect(object sender, RoutedEventArgs e)
         {
-            if (_asyncTcpClient.MySocket.Connected)
+            if (AsyncTcpClient.IsConected())
             {
                 StatusTextBox.Text += "Установлено соединение IP: " + IpAddressTextBox.Text + " Port: " +
                                         PortTextBox.Text + "\n";
                 ConnectionInfoLabel.Content = "Соединение установлено";
                 ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageConnect);
                 ImageConnection.Fill = (Brush)FindResource("HighlightBrush");
+                _statusTimer.Stop();
             }
             else
             {
@@ -124,6 +124,7 @@ namespace X_Ray_Scanner
         private void AsyncTcpClient_ReciveData(object sender, RoutedEventArgs e)
         {
             StatusTextBox.Text += "Data was recived. \n";
+            //StatusTextBox.Text += AsyncTcpClient.GetInstance().InDataBuffer[0].ToString();
         }
 
         //Событие разрыва соединения.
@@ -138,7 +139,6 @@ namespace X_Ray_Scanner
         //Событие клик Установить соединение
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
-            _asyncTcpClient.SetIpAndPort(IpAddressTextBox.Text, Convert.ToInt32(PortTextBox.Text));
             StatusTimer_Tick(null, null);
             _statusTimer.Start();
         }
@@ -148,9 +148,9 @@ namespace X_Ray_Scanner
         /// </summary>
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
-            _asyncTcpClient.OutDataBuffer[1] = 10;
+            //AsyncTcpClient.GetInstance().OutDataBuffer[1] = 10;
             //_asyncTcpClient.OutDataBuffer = Encoding.ASCII.GetBytes(SendDataTextBox.Text);
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -176,12 +176,10 @@ namespace X_Ray_Scanner
         {
             try
             {
-                if (_asyncTcpClient.MySocket.Connected)
-                    _asyncTcpClient.Close();
-            }
-            catch (NullReferenceException)
-            {
-            }
+                _statusTimer.Stop();
+               if (AsyncTcpClient.IsConected())
+                 AsyncTcpClient.GetInstance().Close();
+            }            
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Source + ex.Message);
@@ -711,10 +709,8 @@ namespace X_Ray_Scanner
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            //StatusTextBox.Text += "ReceiveTimeout :" + tcpClient.ReceiveTimeout + "\n";
-            //StatusTextBox.Text += "SendTimeout :" + tcpClient.SendTimeout + "\n";
-            //StatusTextBox.Text += "ReceiveBufferSize :" + tcpClient.ReceiveBufferSize + "\n";
-            //StatusTextBox.Text += "SendBufferSize :" + tcpClient.SendBufferSize + "\n";
+            byte[] send = {1, 2, 3, 4};
+            AsyncTcpClient.GetInstance().Send(send);
         }
     }
 }

@@ -7,24 +7,28 @@ using System.Windows.Threading;
 
 namespace X_Ray_Scanner
 {
-    class AsyncTcpClient : UserControl
+    internal class AsyncTcpClient : UserControl
     {
+        private static AsyncTcpClient _instance;
+        private string _ipAddress;
+        private int _port;
+        private static Socket _mySocket;
+
         //Количество байт для отправки
         private int _bytesToSend;
 
-        //IpAddress и Port
-        private string _ipAddress;
-        private int _port;
-        
+        //!!!Добавить BackgroundWorker для приема данных.
+
+        public static bool IsConected() {
+            if (_mySocket != null)
+                return _mySocket.Connected;
+            else return false;
+        }
+
         //Вх./Вых. буффер для данных.
         public readonly byte[] InDataBuffer = new byte[1024];
-        public readonly byte[] OutDataBuffer = new byte[1024];
+        public byte[] OutDataBuffer = new byte[1024];
         
-        //Socet для подключения TCP соединения.
-        public Socket MySocket;
-
-        //Добавить BackgroundWorker для приема данных.
-
         //Переменные для запуска отдельных потоков.
         private readonly BackgroundWorker _backConnect = new BackgroundWorker();
         private readonly BackgroundWorker _backSend = new BackgroundWorker();
@@ -34,8 +38,8 @@ namespace X_Ray_Scanner
             RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler ConnectData
         {
-            add { AddHandler(ConnectEvent, value); }
-            remove { RemoveHandler(ConnectEvent, value); }
+            add => AddHandler(ConnectEvent, value);
+            remove => RemoveHandler(ConnectEvent, value);
         }
 
         //Событие отправки данных по TCP соединению.
@@ -43,8 +47,8 @@ namespace X_Ray_Scanner
             RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler SendData
         {
-            add { AddHandler(SendEvent, value); }
-            remove { RemoveHandler(SendEvent, value); }
+            add => AddHandler(SendEvent, value);
+            remove => RemoveHandler(SendEvent, value);
         }
 
         //Событие получения данных по TCP соединению.
@@ -52,8 +56,8 @@ namespace X_Ray_Scanner
             RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler ReceiveData
         {
-            add { AddHandler(ReceiveEvent, value); }
-            remove { RemoveHandler(ReceiveEvent, value); }
+            add => AddHandler(ReceiveEvent, value);
+            remove => RemoveHandler(ReceiveEvent, value);
         }
 
         //Событие разрыва соединения.
@@ -61,28 +65,35 @@ namespace X_Ray_Scanner
             RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
         public event RoutedEventHandler DisconnectData
         {
-            add { AddHandler(DisconnectEvent, value);}
-            remove { RemoveHandler(DisconnectEvent, value);}
+            add => AddHandler(DisconnectEvent, value);
+            remove => RemoveHandler(DisconnectEvent, value);
         }
 
         //Конструктор
-        public AsyncTcpClient()
+        private AsyncTcpClient()
         {
             _backConnect.DoWork += ConnectEventHandler;
             _backSend.DoWork += SendEvenHandler;
         }
 
-        //Метод для вызова события запуска соединения в отдельном потоке.
-        public void Connect()
+        public static AsyncTcpClient GetInstance()
         {
-            MySocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            return _instance ?? (_instance = new AsyncTcpClient());
+        }
+
+        //Метод для вызова события запуска соединения в отдельном потоке.
+        public void ConnectTo(string ipAddress, int port)
+        {
+            _ipAddress = ipAddress;
+            _port = port;
+            _mySocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _backConnect.RunWorkerAsync();
         }
 
         //Метод закрытия соединения.
         public void Close()
         {
-            MySocket.Close();
+            _mySocket.Close();
             Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(DisconnectEvent, this)); }));
         }
 
@@ -93,29 +104,29 @@ namespace X_Ray_Scanner
             _backSend.RunWorkerAsync();
         }
 
-        //Задаем IpAddress и Port
-        public void SetIpAndPort(string ipAddress, int port)
+        public void Send(byte[] array)
         {
-            _ipAddress = ipAddress;
-            _port = port;
+            _bytesToSend = array.Length;
+            OutDataBuffer = array;
+            _backSend.RunWorkerAsync();
         }
 
         //Для делегата обработки события установки соединения.
         private void ConnectEventHandler(object sender, DoWorkEventArgs e)
         {
-            var connectionResult = MySocket.BeginConnect(_ipAddress, _port, null, null);//("192.168.0.47", 9670, null, null);
-            if (!connectionResult.AsyncWaitHandle.WaitOne(100, true)) MySocket.Close();
-            else MySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
+            var connectionResult = _mySocket.BeginConnect(_ipAddress, _port, null, null);//("192.168.0.47", 9670, null, null);
+            if (!connectionResult.AsyncWaitHandle.WaitOne(100, true)) _mySocket.Close();
+            else _mySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
             Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ConnectEvent, this)); }));
         }
 
         //Для делегата обработки события отсылки данных.
         private void SendEvenHandler(object sender, DoWorkEventArgs e)
         {
-            var sendResult = MySocket.BeginSend(OutDataBuffer, 0, _bytesToSend, 0, null, null);
+            var sendResult = _mySocket.BeginSend(OutDataBuffer, 0, _bytesToSend, 0, null, null);
             if (sendResult != null && !sendResult.AsyncWaitHandle.WaitOne(100, true))
             {
-                MySocket.Close();
+                _mySocket.Close();
                 Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ConnectEvent, this)); }));
             }
             else
@@ -127,9 +138,15 @@ namespace X_Ray_Scanner
         //Функция обратного вызова для приема данных по TCP соединению.
         private void ReceiveCallback(IAsyncResult ar)
         {
-            MySocket.EndReceive(ar);
-            Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ReceiveEvent, this)); }));
-            MySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
+            try
+            {
+                _mySocket.EndReceive(ar);
+                Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ReceiveEvent, this)); }));
+                _mySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
+            }
+            catch (Exception ex) {
+                MessageBox.Show("Source: "+ ex.Source + ", Message: " + ex.Message);
+            }
         }
     }
 }
