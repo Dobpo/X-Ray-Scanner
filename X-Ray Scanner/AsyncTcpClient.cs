@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Net;
 using System.Windows.Controls;
 using System.Net.Sockets;
 using System.Windows;
@@ -7,7 +8,7 @@ using System.Windows.Threading;
 
 namespace X_Ray_Scanner
 {
-    internal class AsyncTcpClient : UserControl
+    internal class AsyncTcpClient : UserControl, IDisposable
     {
         private static AsyncTcpClient _instance;
         private string _ipAddress;
@@ -19,7 +20,8 @@ namespace X_Ray_Scanner
 
         //!!!Добавить BackgroundWorker для приема данных.
 
-        public static bool IsConected() {
+        public static bool IsConected()
+        {
             if (_mySocket != null)
                 return _mySocket.Connected;
             else return false;
@@ -28,14 +30,14 @@ namespace X_Ray_Scanner
         //Вх./Вых. буффер для данных.
         public readonly byte[] InDataBuffer = new byte[1024];
         public byte[] OutDataBuffer = new byte[1024];
-        
+
         //Переменные для запуска отдельных потоков.
         private readonly BackgroundWorker _backConnect = new BackgroundWorker();
         private readonly BackgroundWorker _backSend = new BackgroundWorker();
 
         //Событие установки TCP соединения.
         private static readonly RoutedEvent ConnectEvent = EventManager.RegisterRoutedEvent("ConnectData",
-            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
+            RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
         public event RoutedEventHandler ConnectData
         {
             add => AddHandler(ConnectEvent, value);
@@ -44,7 +46,7 @@ namespace X_Ray_Scanner
 
         //Событие отправки данных по TCP соединению.
         private static readonly RoutedEvent SendEvent = EventManager.RegisterRoutedEvent("SendData",
-            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
+            RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
         public event RoutedEventHandler SendData
         {
             add => AddHandler(SendEvent, value);
@@ -53,7 +55,7 @@ namespace X_Ray_Scanner
 
         //Событие получения данных по TCP соединению.
         private static readonly RoutedEvent ReceiveEvent = EventManager.RegisterRoutedEvent("ReceiveData",
-            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
+            RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
         public event RoutedEventHandler ReceiveData
         {
             add => AddHandler(ReceiveEvent, value);
@@ -62,7 +64,7 @@ namespace X_Ray_Scanner
 
         //Событие разрыва соединения.
         private static readonly RoutedEvent DisconnectEvent = EventManager.RegisterRoutedEvent("DisconnectData",
-            RoutingStrategy.Bubble, typeof (RoutedEventHandler), typeof (AsyncTcpClient));
+            RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(AsyncTcpClient));
         public event RoutedEventHandler DisconnectData
         {
             add => AddHandler(DisconnectEvent, value);
@@ -114,7 +116,7 @@ namespace X_Ray_Scanner
         //Для делегата обработки события установки соединения.
         private void ConnectEventHandler(object sender, DoWorkEventArgs e)
         {
-            var connectionResult = _mySocket.BeginConnect(_ipAddress, _port, null, null);//("192.168.0.47", 9670, null, null);
+            var connectionResult = _mySocket.BeginConnect(_ipAddress, _port, null, null);
             if (!connectionResult.AsyncWaitHandle.WaitOne(100, true)) _mySocket.Close();
             else _mySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
             Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ConnectEvent, this)); }));
@@ -144,9 +146,111 @@ namespace X_Ray_Scanner
                 Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(ReceiveEvent, this)); }));
                 _mySocket.BeginReceive(InDataBuffer, 0, InDataBuffer.Length, 0, ReceiveCallback, null);
             }
-            catch (Exception ex) {
-                MessageBox.Show("Source: "+ ex.Source + ", Message: " + ex.Message);
+            catch (Exception ex)
+            {
+                MessageBox.Show("Source: " + ex.Source + ", Message: " + ex.Message);
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+                if (_instance != null)
+                {
+                    try
+                    {
+                        _instance.Close();
+                    }
+                    catch { }
+                    _instance = null;
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~SimpleTcpClient() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
+    }
+
+    internal class RPIConnect
+    {
+        private static RPIConnect _instance;
+
+        const int ImageLenghtByte = 10616832;
+        const int PackLenght = 1024;
+
+        private byte[] _inBuffer = new byte[ImageLenghtByte];
+        private readonly byte[] _outBuffer = new byte[] { 1, 2, 3, 4 };
+
+        private int _offset, _bytesReadFromStream, _bytesReadCount;
+
+        private NetworkStream _networkStream;
+        private readonly TcpClient _client = new TcpClient();
+        private readonly IPEndPoint _ipEndPoint = new IPEndPoint(IPAddress.Parse("192.168.0.53"), 9734);
+
+        public static RPIConnect GetInstance()
+        {
+            return _instance ?? (_instance = new RPIConnect());
+        }
+
+        private RPIConnect()
+        {
+        }
+
+        public void TakeData()
+        {
+            try
+            {
+                _client.Connect(_ipEndPoint);
+                _networkStream = _client.GetStream();
+                _networkStream.Write(_outBuffer, 0, 4);
+                _bytesReadFromStream = 0;
+                _offset = 0;
+                _bytesReadCount = 1296;
+                do
+                {
+                    if (ImageLenghtByte - _offset < 1296) _bytesReadCount = ImageLenghtByte - _offset;
+                    _bytesReadFromStream = _networkStream.Read(_inBuffer, _offset, _bytesReadCount);
+                    _offset += _bytesReadFromStream;
+                } while (_bytesReadFromStream != 0);
+                MessageBox.Show("Все вроде ок, bytes = " + _bytesReadFromStream);
+            } 
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка: " + ex.Message);
+            }
+            finally
+            {
+                _networkStream.Close();
+                _client.Close();
+            }
+        }
+
     }
 }

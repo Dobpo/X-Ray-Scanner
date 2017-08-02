@@ -54,7 +54,7 @@ namespace X_Ray_Scanner
         /// </summary>
         private bool prevZoomRectSet = false;
         #endregion
-
+        
         //Таймер для проверки и установки соединения.
         private readonly DispatcherTimer _statusTimer = new DispatcherTimer();
 
@@ -148,6 +148,12 @@ namespace X_Ray_Scanner
         /// </summary>
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
+            AsyncTcpClient.GetInstance().OutDataBuffer[0] = 1;
+            AsyncTcpClient.GetInstance().OutDataBuffer[1] = 2;
+            AsyncTcpClient.GetInstance().OutDataBuffer[2] = 3;
+            AsyncTcpClient.GetInstance().OutDataBuffer[3] = 4;
+            AsyncTcpClient.GetInstance().Send(4);
+
             //AsyncTcpClient.GetInstance().OutDataBuffer[1] = 10;
             //_asyncTcpClient.OutDataBuffer = Encoding.ASCII.GetBytes(SendDataTextBox.Text);
             //throw new NotImplementedException();
@@ -709,8 +715,24 @@ namespace X_Ray_Scanner
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            byte[] send = {1, 2, 3, 4};
-            AsyncTcpClient.GetInstance().Send(send);
+            RPIConnect dataManager = RPIConnect.GetInstance();
+            dataManager.TakeData();
+        }
+
+        private void TestButton2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                XRayImage xRayImage = new XRayImage();
+                zoomAndPanControl.Background = Brushes.LightGray;
+                ThumbImage.Source = xRayImage.GetBitmapSource();
+                content.Source = xRayImage.GetBitmapSource();
+                ZoomControlsEnable();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

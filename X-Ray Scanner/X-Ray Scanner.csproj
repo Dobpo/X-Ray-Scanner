@@ -83,7 +83,6 @@
     <Compile Include="AsyncTcpClient.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
     <Compile Include="CustomTemplateImage.cs" />
-    <Compile Include="EthernetTabControl.cs" />
     <Compile Include="MouseHandlingMode.cs" />
     <Compile Include="ScaleToPercentConverter.cs" />
     <Compile Include="XRayImage.cs" />

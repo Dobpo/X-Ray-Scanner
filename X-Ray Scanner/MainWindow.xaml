@@ -327,9 +327,14 @@
             </ToggleButton>
             <Button x:Name="TestButton" 
                     Content="Test Button" 
-                    Canvas.Left="243" 
-                    Canvas.Top="187" 
+                    Canvas.Left="242" 
+                    Canvas.Top="151" 
                     Width="80" Click="TestButton_Click"/>
+            <Button x:Name="TestButton_2" 
+                Content="Button 2" 
+                Canvas.Left="242" 
+                Canvas.Top="182" 
+                Width="80" Click="TestButton2_Click"/>
         </Canvas>
         <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="2">
             <Grid.Resources>
@@ -390,7 +395,7 @@
                                 VerticalAlignment="Top" 
                                 Height="20"
                                 Width="136"
-                                Click="ConnectButton_Click"/> 
+                                Click="ConnectButton_Click"/>
                         <TextBox Grid.Row="0"
                                  x:Name="SendDataTextBox" 
                     	         HorizontalAlignment="Left" 
@@ -401,7 +406,8 @@
                     	         VerticalAlignment="Top" 
                     	         Width="171" 
                                  MouseMove="SendDataTextBox_MouseMove" 
-                                 MouseLeave="MouseLeaveInfo"/> <!--KeyDown="SendDataTextBox_KeyDown"-->
+                                 MouseLeave="MouseLeaveInfo"/>
+                        <!--KeyDown="SendDataTextBox_KeyDown"-->
                         <Label Grid.Row="0" 
                                x:Name="Label7" 
                     	       Content="Данные для отправки :" 
@@ -437,7 +443,7 @@
                                 Margin="198,120,0,0" 
                                 VerticalAlignment="Top"
                                 Width="136" 
-                                Click="CleanButton_Click"/> 
+                                Click="CleanButton_Click"/>
                         <Button Grid.Row="0"
                      	        x:Name="DisconnectButton" 
                      	        Content="Разорвать соединение" 
@@ -454,7 +460,8 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="150"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="116*"></ColumnDefinition>
+                            <ColumnDefinition Width="81*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="100"/>
