@@ -58,6 +58,8 @@ namespace X_Ray_Scanner
         //Таймер для проверки и установки соединения.
         private readonly DispatcherTimer _statusTimer = new DispatcherTimer();
 
+        private XRayImage xRayImage;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -67,11 +69,19 @@ namespace X_Ray_Scanner
             AsyncTcpClient.GetInstance().ReceiveData += AsyncTcpClient_ReciveData;
             AsyncTcpClient.GetInstance().DisconnectData += AsyncTcpClient_DisconnectData;
 
+            RpiConnect.GetInstance().GotDataFromRPi += GotDataFromRPi;
+
             _statusTimer.Tick += StatusTimer_Tick;
             _statusTimer.Interval = new TimeSpan(0, 0, 3);
 
             ImageConnection.Data = Geometry.Parse(CustomTemplateImage.ImageDisconnect);
             ImageConnection.Fill = (Brush)FindResource("DisabledMenuItemForeground"); 
+        }
+
+
+        private void GotDataFromRPi(object sender, EventArgs e)
+        {
+            StatusTextBox.Text += "Снимок готов. \n";
         }
 
         #region Для TCP соединения.
@@ -715,15 +725,14 @@ namespace X_Ray_Scanner
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            RPIConnect dataManager = RPIConnect.GetInstance();
+            RpiConnect dataManager = RpiConnect.GetInstance();
             dataManager.TakeData();
-        }
+         }
 
         private void TestButton2_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                XRayImage xRayImage = new XRayImage();
                 zoomAndPanControl.Background = Brushes.LightGray;
                 ThumbImage.Source = xRayImage.GetBitmapSource();
                 content.Source = xRayImage.GetBitmapSource();
@@ -733,6 +742,19 @@ namespace X_Ray_Scanner
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void PrintButton_Click(object sender, RoutedEventArgs e)
+        {
+            RpiConnect.GetInstance().RebuiltResivedData();
+            xRayImage = new XRayImage(RpiConnect.GetInstance().ImageBuffer);
+
+            StatusTextBox.Text += RpiConnect.GetInstance().ImageBuffer[0] + "\n";
+            StatusTextBox.Text += RpiConnect.GetInstance().ImageBuffer[1] + "\n";
+            StatusTextBox.Text += RpiConnect.GetInstance().ImageBuffer[2] + "\n";
+            StatusTextBox.Text += RpiConnect.GetInstance().ImageBuffer[127] + "\n";
+            StatusTextBox.Text += RpiConnect.GetInstance().ImageBuffer[128] + "\n";
+            StatusTextBox.Text += RpiConnect.GetInstance().ImageBuffer[129] + "\n";
         }
     }
 }

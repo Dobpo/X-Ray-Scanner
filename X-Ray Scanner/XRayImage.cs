@@ -1,12 +1,4 @@
-﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace X_Ray_Scanner
@@ -14,25 +6,21 @@ namespace X_Ray_Scanner
     internal class XRayImage
     {
         const int ImageLenghtByte = 10616832;
-        const int ImageWidth = 2048;
-        const int ImageHeight = 2048;
-
-        //Test bitmapsource
-        private readonly short[] TestImageData = new short[10000];
-        //Test bitmapsource
+        const int ImageLenghtShort = 5308416;
+        public readonly int Width;
+        public readonly int Heigth;
 
         private BitmapSource _bitmapSource;
-        private byte[] aBytes = new byte[ImageLenghtByte];
+        private short[] ImageDataArray = new short[ImageLenghtByte];
 
         public XRayImage(byte[] arrayBytes)
         {
-            aBytes = arrayBytes;
-            FillData();
+            ImageDataArray[0] = (short)arrayBytes[0];
         }
 
-        public XRayImage()
+        public XRayImage(short[] array)
         {
-            FillData();
+            ImageDataArray = array;
         }
 
         public void MakeImage()
@@ -40,21 +28,10 @@ namespace X_Ray_Scanner
 
         }
 
-        private void FillData()
-        {
-            for (var i = 0; i < 3333; i++)
-            {
-                TestImageData[i] = 1;
-                TestImageData[i + 3333] = 15000;
-                TestImageData[i + 6666] = 30000;
-            }
-            TestImageData[9999] = 0xFF;
-        }
-
         public BitmapSource GetBitmapSource()
         {
-            int width = 100;
-            int height = 100;
+            int width = 2048;
+            int height = 2048;
 
             double dipY = 96d;
             double dipX = 96d;
@@ -64,11 +41,10 @@ namespace X_Ray_Scanner
 
             if (_bitmapSource == null)
             {
-                _bitmapSource = BitmapSource.Create(width, height, dipX, dipY, pf, null, TestImageData, rawStride);
+                _bitmapSource = BitmapSource.Create(width, height, dipX, dipY, pf, null, ImageDataArray, rawStride);
             }
 
             return _bitmapSource;
         }
-
     }
 }

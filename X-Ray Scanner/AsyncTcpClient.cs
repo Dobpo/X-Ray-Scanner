@@ -4,10 +4,100 @@ using System.Net;
 using System.Windows.Controls;
 using System.Net.Sockets;
 using System.Windows;
+using System.Windows.Navigation;
 using System.Windows.Threading;
 
 namespace X_Ray_Scanner
 {
+    internal class RpiConnect : UserControl
+    {
+        private static RpiConnect _instance;
+
+        const int ImageLenghtByte = 10616832;
+        const int ImageLenghtShort = 5308416;
+        
+        private byte[] _inBuffer = new byte[ImageLenghtByte];
+        public short[] ImageBuffer = new short[ImageLenghtShort];
+        private readonly byte[] _outComandToTakeData = new byte[] { 1, 2, 3, 4 };
+
+        private int _offset, _bytesReadFromStream, _bytesReadCount;
+
+        private NetworkStream _networkStream;
+        private TcpClient _client;
+        private readonly IPEndPoint _ipEndPoint = new IPEndPoint(IPAddress.Parse("192.168.0.53"), 9734);
+
+        public static RpiConnect GetInstance()
+        {
+            return _instance ?? (_instance = new RpiConnect());
+        }
+
+        private RpiConnect()
+        {   
+        }
+
+        public void RebuiltResivedData()
+        {
+            int delta = 1152;
+            short[] DataBuffer = new short[ImageLenghtShort];
+
+            for (int i = 0; i < ImageLenghtShort; i++)
+            {
+                DataBuffer[i] = (short)(((_inBuffer[i * 2 + 1] - 32) << 8 + _inBuffer[i * 2]) * 8);
+            }
+
+            for (int v = 0; v < ImageLenghtShort; v += delta * 2)
+            {
+                for (int j = 0; j < delta; j += 128)
+                {
+                    for (int i = 0; i < 128; i++)
+                    {
+                        ImageBuffer[i + j + v] = DataBuffer[i + j + v];
+                        ImageBuffer[i + j + v + delta] = DataBuffer[i + j + v + delta];
+                    }
+                }
+            }
+        }
+
+        public void TakeData()
+        {
+            try
+            {
+                _client = new TcpClient();
+                _client.Connect(_ipEndPoint);
+                _networkStream = _client.GetStream();
+                _networkStream.Write(_outComandToTakeData, 0, 4);
+                _bytesReadFromStream = 0;
+                _offset = 0;
+                _bytesReadCount = 1296;
+                do
+                {
+                    if (ImageLenghtByte - _offset < 1296) _bytesReadCount = ImageLenghtByte - _offset;
+                    _bytesReadFromStream = _networkStream.Read(_inBuffer, _offset, _bytesReadCount);
+                    _offset += _bytesReadFromStream;
+                } while (_bytesReadFromStream != 0);
+                Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { RaiseEvent(new RoutedEventArgs(GotDataEvent, this)); }));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка: " + ex.Message);
+            }
+            finally
+            {
+                _networkStream.Close();
+                _client.Close();
+                _client = null;
+            }
+        }
+
+        private static readonly RoutedEvent GotDataEvent = EventManager.RegisterRoutedEvent("GotDataFromRPi",
+            RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(RpiConnect));
+        public event RoutedEventHandler GotDataFromRPi
+        {
+            add => AddHandler(GotDataEvent, value);
+            remove => RemoveHandler(GotDataEvent, value);
+        }
+    }
+
     internal class AsyncTcpClient : UserControl, IDisposable
     {
         private static AsyncTcpClient _instance;
@@ -196,61 +286,5 @@ namespace X_Ray_Scanner
             // GC.SuppressFinalize(this);
         }
         #endregion
-    }
-
-    internal class RPIConnect
-    {
-        private static RPIConnect _instance;
-
-        const int ImageLenghtByte = 10616832;
-        const int PackLenght = 1024;
-
-        private byte[] _inBuffer = new byte[ImageLenghtByte];
-        private readonly byte[] _outBuffer = new byte[] { 1, 2, 3, 4 };
-
-        private int _offset, _bytesReadFromStream, _bytesReadCount;
-
-        private NetworkStream _networkStream;
-        private readonly TcpClient _client = new TcpClient();
-        private readonly IPEndPoint _ipEndPoint = new IPEndPoint(IPAddress.Parse("192.168.0.53"), 9734);
-
-        public static RPIConnect GetInstance()
-        {
-            return _instance ?? (_instance = new RPIConnect());
-        }
-
-        private RPIConnect()
-        {
-        }
-
-        public void TakeData()
-        {
-            try
-            {
-                _client.Connect(_ipEndPoint);
-                _networkStream = _client.GetStream();
-                _networkStream.Write(_outBuffer, 0, 4);
-                _bytesReadFromStream = 0;
-                _offset = 0;
-                _bytesReadCount = 1296;
-                do
-                {
-                    if (ImageLenghtByte - _offset < 1296) _bytesReadCount = ImageLenghtByte - _offset;
-                    _bytesReadFromStream = _networkStream.Read(_inBuffer, _offset, _bytesReadCount);
-                    _offset += _bytesReadFromStream;
-                } while (_bytesReadFromStream != 0);
-                MessageBox.Show("Все вроде ок, bytes = " + _bytesReadFromStream);
-            } 
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка: " + ex.Message);
-            }
-            finally
-            {
-                _networkStream.Close();
-                _client.Close();
-            }
-        }
-
     }
 }
